@@ -18,7 +18,7 @@ app.add_middleware(
 
 # 🧠 Load model artifacts
 try:
-    with open("model.pkl", "rb") as f:
+    with open("rf_model.pkl", "rb") as f:
         model = pickle.load(f)
 
     with open("imputer.pkl", "rb") as f:
