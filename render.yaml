@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: asd-screening-api
+    env: python
+    branch: main
+    startCommand: bash start.sh
