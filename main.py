@@ -5,6 +5,7 @@ import pickle
 import io
 import logging
 import traceback
+import os
 
 app = FastAPI()
 
@@ -17,23 +18,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 🧠 Load model artifacts
+# 📁 Resolve absolute paths for model artifacts
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 try:
-    with open("rf_model.pkl", "rb") as f:
+    with open(os.path.join(BASE_DIR, "rf_model.pkl"), "rb") as f:
         model = pickle.load(f)
 
-    with open("imputer.pkl", "rb") as f:
+    with open(os.path.join(BASE_DIR, "imputer.pkl"), "rb") as f:
         imputer = pickle.load(f)
 
-    with open("feature_columns.pkl", "rb") as f:
+    with open(os.path.join(BASE_DIR, "feature_columns.pkl"), "rb") as f:
         feature_columns = pickle.load(f)
 
 except FileNotFoundError as fnf_error:
     logging.error(f"Missing model file: {fnf_error}")
     raise RuntimeError("One or more model files are missing. Please check deployment artifacts.")
 except Exception as e:
-    logging.error(f"Model loading failed: {traceback.format_exc()}")
-    raise RuntimeError("Failed to load model artifacts due to unexpected error.")
+    logging.error(f"Model loading failed:\n{traceback.format_exc()}")
+    raise RuntimeError(f"Failed to load model artifacts due to unexpected error: {e}")
 
 # 🩺 Health check route
 @app.get("/health")
@@ -74,5 +77,5 @@ async def predict(file: UploadFile = File(...)):
         return result_df.to_dict(orient="records")
 
     except Exception as e:
-        logging.error(f"Prediction failed: {traceback.format_exc()}")
+        logging.error(f"Prediction failed:\n{traceback.format_exc()}")
         return {"error": f"Prediction failed: {str(e)}"}
